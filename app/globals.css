@@ -9,11 +9,11 @@ body {
 
 body {
   font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  @apply bg-[#F4F6FA] text-[#0B1222] antialiased;
+  @apply bg-white text-[#0B0B0B] antialiased;
 }
 
 * {
-  @apply border-adyen-gray-200;
+  @apply border-travelport-gray-200;
 }
 
 .ca-surface {
@@ -29,31 +29,31 @@ body {
 }
 
 .ca-title {
-  @apply text-xl font-semibold tracking-[-0.01em] text-[#0B1222] sm:text-[28px];
+  @apply text-xl font-semibold tracking-[-0.01em] text-[#0B0B0B] sm:text-[28px];
 }
 
 .ca-section-title {
-  @apply mb-3 text-base font-semibold tracking-[-0.01em] text-[#0B1222] sm:mb-4 sm:text-lg;
+  @apply mb-3 text-base font-semibold tracking-[-0.01em] text-[#0B0B0B] sm:mb-4 sm:text-lg;
 }
 
 .ca-muted {
-  @apply text-sm text-[#5C6B84];
+  @apply text-sm text-[#5C5C5C];
 }
 
 .ca-input {
-  @apply w-full rounded-lg border border-[#D8DFEA] bg-white px-3 py-2 text-sm text-[#0B1222] outline-none transition focus:border-[#2575FC] focus:ring-2 focus:ring-[#2575FC]/15;
+  @apply w-full rounded-lg border border-[#D8DFEA] bg-white px-3 py-2 text-sm text-[#0B0B0B] outline-none transition focus:border-black focus:ring-2 focus:ring-black/15;
 }
 
 .ca-button {
-  @apply inline-flex items-center justify-center rounded-lg border border-transparent bg-[#0ABF53] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#099A43] disabled:cursor-not-allowed disabled:opacity-70;
+  @apply inline-flex items-center justify-center rounded-lg border border-transparent bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#171717] disabled:cursor-not-allowed disabled:opacity-70;
 }
 
 .ca-button-dark {
-  @apply inline-flex items-center justify-center rounded-lg border border-transparent bg-[#0F1D3D] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0B1731] disabled:cursor-not-allowed disabled:opacity-70;
+  @apply inline-flex items-center justify-center rounded-lg border border-transparent bg-black px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#171717] disabled:cursor-not-allowed disabled:opacity-70;
 }
 
 .ca-button-secondary {
-  @apply inline-flex items-center justify-center rounded-lg border border-[#D8DFEA] bg-white px-4 py-2 text-sm font-semibold text-[#1F2F4A] transition hover:bg-[#F8FAFD];
+  @apply inline-flex items-center justify-center rounded-lg border border-[#D8DFEA] bg-white px-4 py-2 text-sm font-semibold text-[#0B0B0B] transition hover:bg-[#F4F4F4];
 }
 
 .ca-table {
@@ -61,16 +61,16 @@ body {
 }
 
 .ca-th {
-  @apply px-2.5 py-2 text-left text-xs font-semibold uppercase tracking-[0.04em] text-[#70819D] sm:px-3;
+  @apply px-2.5 py-2 text-left text-xs font-semibold uppercase tracking-[0.04em] text-[#6B6B6B] sm:px-3;
 }
 
 .ca-td {
-  @apply px-2.5 py-2 text-sm text-[#16253F] sm:px-3 sm:py-2.5;
+  @apply px-2.5 py-2 text-sm text-[#0B0B0B] sm:px-3 sm:py-2.5;
 }
 
 #dropin-container {
-  --adyen-sdk-color-outline-primary: #0abf53;
-  --adyen-sdk-color-label-primary: #00112c;
+  --adyen-sdk-color-outline-primary: #000000;
+  --adyen-sdk-color-label-primary: #000000;
 }
 
 /* Hide Adyen's default helper copy above card fields. */

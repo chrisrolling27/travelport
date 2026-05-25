@@ -9,11 +9,11 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "CardPortal",
-  description: "Adyen Balance Platform fintech demo",
+  title: "Travelport",
+  description: "Travelport demo",
   icons: {
-    icon: "/cardportal-mark.svg",
-    apple: "/cardportal-mark.svg",
+    icon: "/travelport-mark.svg",
+    apple: "/travelport-mark.svg",
   },
 };
 

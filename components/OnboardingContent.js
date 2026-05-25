@@ -10,11 +10,24 @@ import { useAuth } from "@/context/AuthContext";
 import { getApiErrorMessage } from "@/lib/apiError";
 
 const ONBOARDING_CAPABILITY_ORDER = [
-  "issueCard",
-  "useCard",
-  "receiveFromTransferInstrument",
+  "issueCardCommercial",
+  "useCardCommercial",
+  "receivePayments",
+  "receiveFromBalanceAccount",
+  "receiveFromPlatformPayments",
+  "sendToBalanceAccount",
   "sendToTransferInstrument",
 ];
+
+const CAPABILITY_LABELS = {
+  issueCardCommercial: "Issue card commercial",
+  useCardCommercial: "Use card commercial",
+  receivePayments: "Receive payments",
+  receiveFromBalanceAccount: "Receive funds from balance accounts",
+  receiveFromPlatformPayments: "Receive funds from split payments",
+  sendToBalanceAccount: "Send funds to balance accounts",
+  sendToTransferInstrument: "Send funds to transfer instruments",
+};
 
 /** Human-readable labels from Adyen capability `problems` (strings, verificationErrors, or generic objects). */
 function labelsFromCapabilityProblems(problems) {
@@ -166,6 +179,19 @@ export default function OnboardingContent() {
             <span className="font-semibold">Balance Account:</span>{" "}
             <span className="break-all">{primaryBalanceAccountId}</span>
           </li>
+          <li>
+            <span className="font-semibold">Payments Business Line:</span>{" "}
+            <span className="break-all">{user?.paymentsBusinessLineId || "—"}</span>
+          </li>
+          <li>
+            <span className="font-semibold">Store:</span>{" "}
+            <span className="break-all">
+              {user?.storeId || "—"}
+              {user?.storeReference ? (
+                <span className="text-[#5C6B84]"> (ref: {user.storeReference})</span>
+              ) : null}
+            </span>
+          </li>
         </ul>
       </section>
 
@@ -218,7 +244,7 @@ export default function OnboardingContent() {
                     const panelId = `onboarding-cap-failures-${capability.name}`;
                     return (
                       <tr key={capability.name} className="border-t border-[#EDF1F7] align-top">
-                        <td className="ca-td font-medium">{capability.name}</td>
+                        <td className="ca-td font-medium">{CAPABILITY_LABELS[capability.name] || capability.name}</td>
                         <td className="ca-td">
                           <div className="flex flex-col gap-2">
                             <div className="flex flex-wrap items-center gap-2">

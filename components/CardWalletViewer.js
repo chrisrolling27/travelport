@@ -198,7 +198,7 @@ export default function CardWalletViewer({
         ) : walletCards.length === 0 ? (
           <div className="mx-auto w-full max-w-[460px] rounded-[28px] border border-[#D8E2F2] bg-gradient-to-br from-[#F9FBFF] via-[#F0F5FF] to-[#F8FAFF] p-6 text-center shadow-[0_30px_70px_-42px_rgba(26,48,92,0.28)]">
             <div className="mx-auto h-[180px] w-full max-w-[300px] rounded-2xl border border-dashed border-[#B7C7E6] bg-[#EDF3FF]" />
-            <p className="mt-4 text-base font-semibold text-[#0F1D3D]">No cards issued yet</p>
+            <p className="mt-4 text-base font-semibold text-[#000000]">No cards issued yet</p>
           </div>
         ) : (
           <>
@@ -218,7 +218,7 @@ export default function CardWalletViewer({
                   onClick={goPrev}
                   disabled={!canRotate}
                   aria-label="Previous card"
-                  className="absolute -left-12 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#C8D6EE] bg-white text-3xl text-[#233A66] shadow-[0_18px_38px_-26px_rgba(20,43,88,0.7)] transition hover:scale-105 hover:text-[#0F1D3D] disabled:cursor-not-allowed disabled:opacity-40 sm:inline-flex md:-left-14"
+                  className="absolute -left-12 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#C8D6EE] bg-white text-3xl text-[#233A66] shadow-[0_18px_38px_-26px_rgba(20,43,88,0.7)] transition hover:scale-105 hover:text-[#000000] disabled:cursor-not-allowed disabled:opacity-40 sm:inline-flex md:-left-14"
                 >
                   <span>‹</span>
                 </button>
@@ -227,7 +227,7 @@ export default function CardWalletViewer({
                   onClick={goNext}
                   disabled={!canRotate}
                   aria-label="Next card"
-                  className="absolute -right-12 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#C8D6EE] bg-white text-3xl text-[#233A66] shadow-[0_18px_38px_-26px_rgba(20,43,88,0.7)] transition hover:scale-105 hover:text-[#0F1D3D] disabled:cursor-not-allowed disabled:opacity-40 sm:inline-flex md:-right-14"
+                  className="absolute -right-12 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-[#C8D6EE] bg-white text-3xl text-[#233A66] shadow-[0_18px_38px_-26px_rgba(20,43,88,0.7)] transition hover:scale-105 hover:text-[#000000] disabled:cursor-not-allowed disabled:opacity-40 sm:inline-flex md:-right-14"
                 >
                   <span>›</span>
                 </button>

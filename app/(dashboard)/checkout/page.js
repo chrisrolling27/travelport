@@ -579,8 +579,8 @@ export default function CheckoutPage() {
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="w-full max-w-2xl rounded-lg bg-[#F8FAFD] p-4">
             <div className="space-y-2">
-              <p className="text-lg font-extrabold leading-tight text-[#0B1222] md:text-xl">{order.item}</p>
-              <p className="text-xl font-extrabold text-[#0B1222]">Amount: {orderAmount}</p>
+              <p className="text-lg font-extrabold leading-tight text-[#0B0B0B] md:text-xl">{order.item}</p>
+              <p className="text-xl font-extrabold text-[#0B0B0B]">Amount: {orderAmount}</p>
               <p className="break-all text-sm font-medium text-[#334155]">Reference: {order.reference}</p>
             </div>
           </div>

@@ -28,9 +28,9 @@ export default function LandingPage() {
       <SmokeBackground />
 
       <div className="relative z-10 w-full max-w-md">
-        <p className="mb-2 text-center text-xs font-medium uppercase tracking-[0.14em] text-[#0ABF53]">Adyen</p>
-        <h1 className="mb-2 text-center text-4xl font-semibold tracking-tight text-[#0B1222]">CardPortal</h1>
-        <div className="rounded-2xl shadow-[0_4px_30px_rgba(10,191,83,0.12)]">
+        <h1 className="mb-2 text-center text-4xl font-semibold tracking-tight text-black">Travelport</h1>
+        <p className="mb-2 text-center text-xs font-medium uppercase tracking-[0.14em] text-black/60">Powered by Adyen</p>
+        <div className="rounded-2xl shadow-[0_4px_30px_rgba(0,0,0,0.12)]">
           <LoginForm />
         </div>
       </div>

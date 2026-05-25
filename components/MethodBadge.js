@@ -1,5 +1,5 @@
 const STYLE = {
-  GET: "bg-[#0ABF53]",
+  GET: "bg-black",
   POST: "bg-[#2575FC]",
   PATCH: "bg-[#F39C12]",
   DELETE: "bg-[#E74C3C]",

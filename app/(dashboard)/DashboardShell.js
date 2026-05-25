@@ -65,7 +65,7 @@ export default function DashboardShell({ children }) {
     <div className="flex min-h-screen">
       <Sidebar mobileOpen={mobileNavOpen} onMobileClose={() => setMobileNavOpen(false)} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-[#DCE3EF] bg-[#0A1633] px-4 text-white lg:hidden">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-black/10 bg-black px-4 text-white lg:hidden">
           <button
             type="button"
             onClick={() => setMobileNavOpen(true)}
@@ -74,9 +74,9 @@ export default function DashboardShell({ children }) {
           >
             <Menu size={22} />
           </button>
-          <p className="text-lg font-extrabold tracking-tight">CardPortal</p>
+          <p className="text-lg font-extrabold tracking-tight">Travelport</p>
         </header>
-        <main className="flex-1 bg-[#F4F6FA] p-4 sm:p-6">{children}</main>
+        <main className="flex-1 bg-white p-4 sm:p-6">{children}</main>
       </div>
     </div>
   );

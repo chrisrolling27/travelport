@@ -9,7 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { getApiErrorMessage } from "@/lib/apiError";
 
 const MAX_PAYMENT_INSTRUMENTS = 4;
-const DEFAULT_BA_REFERENCE = "BA3296P22322BJ5P5CRKCB8R6";
+const DEFAULT_BA_REFERENCE = "BA329CX22322BT5PFDPVRDHF9";
 const CARD_BRANDS = [
   {
     value: "visa",

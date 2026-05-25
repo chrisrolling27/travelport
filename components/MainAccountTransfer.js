@@ -268,7 +268,7 @@ export default function MainAccountTransfer({ onTransferComplete, onSuccess, onE
             min={1}
             max={9999.99}
             step={0.01}
-            className="min-w-0 flex-1 border-0 bg-transparent px-3 py-2 text-sm text-[#0B1222] outline-none"
+            className="min-w-0 flex-1 border-0 bg-transparent px-3 py-2 text-sm text-[#0B0B0B] outline-none"
             value={form.amount}
             onChange={(event) => setForm((prev) => ({ ...prev, amount: event.target.value }))}
             disabled={isSubmitting}

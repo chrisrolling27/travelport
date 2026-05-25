@@ -1,6 +1,6 @@
-# CardPortal
+# Travelport
 
-**[cardportal.dev](https://cardportal.dev)**
+**[travelport.dev](https://travelport.dev)**
 
 A demo environment for exploring Adyen's Balance Platform and Card Issuing APIs end-to-end. Sign up, complete hosted onboarding, issue virtual cards, spend them through a checkout flow, configure sweeps, and watch every underlying API call in real time.
 
@@ -30,5 +30,5 @@ Copy `.env.example` to `.env.local` and fill in your Adyen test credentials.
 
 ## References
 
-- Live app: **[cardportal.dev](https://cardportal.dev)**
+- Live app: **[travelport.dev](https://travelport.dev)**
 - [Adyen API Explorer](https://docs.adyen.com/api-explorer/)

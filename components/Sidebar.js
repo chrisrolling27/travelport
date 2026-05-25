@@ -26,16 +26,16 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }) {
   };
 
   const panel = (
-    <aside className="flex h-full w-[260px] shrink-0 flex-col overflow-y-auto border-r border-[#DCE3EF] bg-[#0A1633] text-white">
+    <aside className="flex h-full w-[260px] shrink-0 flex-col overflow-y-auto border-r border-black/10 bg-black text-white">
       <div className="border-b border-white/10 p-5">
         <div className="flex items-center">
-          <p className="text-3xl font-extrabold tracking-tight text-white">CardPortal</p>
+          <p className="text-3xl font-extrabold tracking-tight text-white">Travelport</p>
           <span
             aria-hidden="true"
             className="ml-2 inline-flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full"
           >
             <Image
-              src="/cardportal-mark.svg"
+              src="/travelport-mark.svg"
               alt=""
               width={24}
               height={24}
@@ -56,7 +56,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }) {
                 onClick={handleNavClick}
                 className={`block rounded-lg border-l-4 px-3 py-2.5 text-sm font-semibold transition ${
                   active
-                    ? "border-[#0ABF53] bg-white/10 text-white"
+                    ? "border-white bg-white/10 text-white"
                     : "border-transparent text-white hover:bg-white/5"
                 }`}
               >

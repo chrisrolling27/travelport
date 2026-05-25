@@ -9,12 +9,11 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        adyen: {
-          green: "#0ABF53",
-          darkGreen: "#099A43",
-          black: "#00112C",
-          darkNavy: "#001435",
-          navy: "#002855",
+        travelport: {
+          black: "#000000",
+          ink: "#0B0B0B",
+          softBlack: "#171717",
+          charcoal: "#2A2A2A",
           white: "#FFFFFF",
           gray: {
             50: "#F7F8FA",
@@ -28,7 +27,7 @@ module.exports = {
         },
       },
       boxShadow: {
-        soft: "0 6px 24px rgba(0, 17, 44, 0.08)",
+        soft: "0 6px 24px rgba(0, 0, 0, 0.08)",
       },
     },
   },

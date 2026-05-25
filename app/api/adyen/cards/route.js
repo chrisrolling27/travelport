@@ -1,8 +1,8 @@
 import { adyenPlatformRequest } from "@/lib/adyen";
 
 const BRAND_VARIANT_BY_BRAND = {
-  visa: process.env.ADYEN_BRAND_VARIANT_VISA || "visa_credit_s",
-  mc: process.env.ADYEN_BRAND_VARIANT_MASTERCARD || "mc_credit_mco",
+  visa: process.env.ADYEN_BRAND_VARIANT_VISA || "visa_credit_g",
+  mc: process.env.ADYEN_BRAND_VARIANT_MASTERCARD || "mc_debit_mds",
 };
 const HARDCODED_CARDHOLDER_NAME = "Chris Rolling";
 const MAX_PAYMENT_INSTRUMENTS = 4;

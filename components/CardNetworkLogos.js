@@ -38,7 +38,7 @@ export function MastercardBrandMark({
   layout = "stack",
   className = "",
 }) {
-  const textColor = tone === "onDark" ? "text-white" : "text-[#0B1222]";
+  const textColor = tone === "onDark" ? "text-white" : "text-[#0B0B0B]";
   const svgBox =
     size === "wallet" ? "h-10 w-[4rem] sm:h-11 sm:w-[4.5rem]" : "h-9 w-[3.75rem] sm:h-10 sm:w-[4.25rem]";
   const showWordmark = size === "picker";

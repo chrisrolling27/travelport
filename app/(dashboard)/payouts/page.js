@@ -220,7 +220,7 @@ export default function PayoutsPage() {
 
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
           <div className="rounded-xl border border-[#EDF1F7] bg-[#FBFCFF] p-4 sm:p-5">
-            <h3 className="text-sm font-semibold text-[#00112C]">Current Sweep</h3>
+            <h3 className="text-sm font-semibold text-[#0B0B0B]">Current Sweep</h3>
             {isLoadingSweep ? (
               <p className="ca-muted mt-2 text-sm">Loading sweep...</p>
             ) : hasSweep ? (
@@ -236,12 +236,12 @@ export default function PayoutsPage() {
                     {targetAmountFormatted ? (
                       <>
                         <span
-                          className="text-3xl font-semibold tracking-tight text-[#00112C]"
+                          className="text-3xl font-semibold tracking-tight text-[#0B0B0B]"
                           aria-hidden="true"
                         >
                           $
                         </span>
-                        <span className="text-3xl font-semibold tracking-tight text-[#00112C]">
+                        <span className="text-3xl font-semibold tracking-tight text-[#0B0B0B]">
                           {targetAmountFormatted}
                         </span>
                       </>
@@ -254,15 +254,15 @@ export default function PayoutsPage() {
                 </div>
                 <dl className="mt-4 grid grid-cols-[auto,1fr] gap-x-4 gap-y-3 text-sm">
                   <dt className="ca-muted whitespace-nowrap">Sweep ID</dt>
-                  <dd className="break-all text-right font-semibold text-[#00112C]">{sweepId || "—"}</dd>
+                  <dd className="break-all text-right font-semibold text-[#0B0B0B]">{sweepId || "—"}</dd>
                   <dt className="ca-muted whitespace-nowrap">Balance Account</dt>
-                  <dd className="break-all text-right font-medium text-[#00112C]">{user?.balanceAccountId || "—"}</dd>
+                  <dd className="break-all text-right font-medium text-[#0B0B0B]">{user?.balanceAccountId || "—"}</dd>
                   <dt className="ca-muted whitespace-nowrap">Transfer Instrument</dt>
-                  <dd className="break-all text-right font-medium text-[#00112C]">
+                  <dd className="break-all text-right font-medium text-[#0B0B0B]">
                     {sweep.counterparty?.transferInstrumentId || "—"}
                   </dd>
                   <dt className="ca-muted whitespace-nowrap">Priority</dt>
-                  <dd className="text-right font-medium text-[#00112C]">Regular</dd>
+                  <dd className="text-right font-medium text-[#0B0B0B]">Regular</dd>
                 </dl>
               </>
             ) : (
@@ -271,16 +271,16 @@ export default function PayoutsPage() {
           </div>
 
           <form onSubmit={submitSweep} className="rounded-xl border border-[#EDF1F7] bg-white p-4 sm:p-5">
-            <h3 className="text-sm font-semibold text-[#00112C]">{hasSweep ? "Edit Sweep" : "Setup Sweep"}</h3>
+            <h3 className="text-sm font-semibold text-[#0B0B0B]">{hasSweep ? "Edit Sweep" : "Setup Sweep"}</h3>
 
             <div className="mt-4 grid gap-3">
               <div className="rounded-lg border border-[#EDF1F7] bg-[#FBFCFF] px-3 py-2 text-sm">
                 <p className="ca-muted text-xs">Source Balance Account</p>
-                <p className="mt-1 font-medium text-[#00112C]">{user?.balanceAccountId || "Not available"}</p>
+                <p className="mt-1 font-medium text-[#0B0B0B]">{user?.balanceAccountId || "Not available"}</p>
               </div>
               <div className="rounded-lg border border-[#EDF1F7] bg-[#FBFCFF] px-3 py-2 text-sm">
                 <p className="ca-muted text-xs">Destination Transfer Instrument</p>
-                <p className="mt-1 font-medium text-[#00112C]">{selectedTransferInstrumentId || "Not available"}</p>
+                <p className="mt-1 font-medium text-[#0B0B0B]">{selectedTransferInstrumentId || "Not available"}</p>
               </div>
 
               <label className="text-xs font-medium text-[#3B4556]">Schedule</label>
@@ -310,7 +310,7 @@ export default function PayoutsPage() {
                   step={0.01}
                   value={form.amount}
                   onChange={(e) => setForm((s) => ({ ...s, amount: e.target.value }))}
-                  className="min-w-0 flex-1 border-0 bg-transparent px-3 py-2 text-sm text-[#0B1222] outline-none"
+                  className="min-w-0 flex-1 border-0 bg-transparent px-3 py-2 text-sm text-[#0B0B0B] outline-none"
                   placeholder="0.00"
                   disabled={isFormDisabled}
                   aria-label="Sweep amount in US dollars"
