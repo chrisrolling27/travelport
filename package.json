@@ -1,0 +1,28 @@
+{
+  "name": "card-portal",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "NODE_OPTIONS=--no-deprecation next dev",
+    "dev:https": "NODE_OPTIONS=--no-deprecation next dev --experimental-https",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@adyen/adyen-platform-experience-web": "^1.10.2",
+    "@adyen/adyen-web": "^6.32.1",
+    "@vercel/analytics": "^2.0.1",
+    "lucide-react": "^1.7.0",
+    "next": "^14.2.33",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.33",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.18"
+  }
+}
