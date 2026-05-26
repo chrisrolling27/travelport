@@ -1,4 +1,4 @@
-import { adyenCheckoutRequest } from "@/lib/adyen";
+import { adyenDropInCheckoutRequest } from "@/lib/adyen";
 
 function toClientSafePaymentResponse(payload) {
   if (!payload || typeof payload !== "object") return {};
@@ -19,7 +19,7 @@ export async function POST(request) {
       );
     }
 
-    const data = await adyenCheckoutRequest("/payments/details", "POST", body);
+    const data = await adyenDropInCheckoutRequest("/payments/details", "POST", body);
     return Response.json(toClientSafePaymentResponse(data));
   } catch (error) {
     return Response.json(

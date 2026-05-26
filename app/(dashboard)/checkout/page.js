@@ -224,14 +224,6 @@ export default function CheckoutPage() {
 
   const [acquiring, setAcquiring] = useState(false);
   const acquireFlight = async () => {
-    if (!storeId) {
-      showError("No store configured for this account. Complete onboarding first.");
-      return;
-    }
-    if (!user?.balanceAccountId) {
-      showError("No balance account on file.");
-      return;
-    }
     setAcquiring(true);
     try {
       const payload = await trackedFetch("/api/adyen/checkout/payments", {
@@ -247,19 +239,50 @@ export default function CheckoutPage() {
       });
       const resultCode = payload?.resultCode || "Unknown";
       if (resultCode === "Authorised") {
+        // Random margin: airline charges the OTA 96–99% of what was collected,
+        // so the user (OTA) profits 1–4% on the spread. Stored on acquiredFlight
+        // so Drop-in remounts use the same amount.
+        const marginRatio = 0.96 + Math.random() * 0.03;
+        const purchasedAmountMinor = Math.max(Math.round(order.amountMinor * marginRatio), 100);
         setAcquiredFlight({
           ...order,
           pspReference: payload?.pspReference || "",
           acquiredAt: new Date().toISOString(),
+          purchasedAmountMinor,
         });
+        // Record the sale in the scoreboard store (best-effort).
+        if (user?.accountHolderId) {
+          trackedFetch("/api/scoreboard", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              accountHolderId: user.accountHolderId,
+              type: "sale",
+              reference: order.reference,
+              pspReference: payload?.pspReference || "",
+              amountMinor: order.amountMinor,
+              currency: order.currency,
+              flight: {
+                airlineName: order.airlineName,
+                airlineCode: order.airlineCode,
+                flightCode: order.flightCode,
+                flightDisplay: order.flightDisplay,
+                origin: order.origin,
+                destination: order.destination,
+              },
+            }),
+          }).catch(() => {});
+        }
         showSuccess(
           `Flight acquired\n${order.airlineName} ${order.flightDisplay} · ${order.origin.code} → ${order.destination.code}\n${orderAmount}`
         );
       } else {
-        showError(`Payment ${resultCode}${payload?.refusalReason ? `: ${payload.refusalReason}` : ""}`);
+        const detail = payload?.refusalReason || (resultCode !== "Unknown" ? resultCode : "");
+        showError(detail ? `Acquired flight failed: ${detail}` : "Acquired flight failed, try again");
       }
     } catch (error) {
-      showError(`Payment failed: ${getApiErrorMessage(error)}`);
+      const detail = getApiErrorMessage(error);
+      showError(detail ? `Acquired flight failed: ${detail}` : "Acquired flight failed, try again");
     } finally {
       setAcquiring(false);
     }
@@ -300,11 +323,14 @@ export default function CheckoutPage() {
       setDropinError("");
       setDropinLoading(true);
       try {
-        const dropinAmount = acquiredFlight.amountMinor;
+        // Drop-in pays the airline what the user "purchased" the seat for —
+        // a randomized 80–93% of what was collected from the traveler. Set
+        // when the flight was acquired so the same value is used across remounts.
+        const dropinAmount = acquiredFlight.purchasedAmountMinor || Math.max(acquiredFlight.amountMinor - 2000, 100);
         const dropinCurrency = acquiredFlight.currency;
         const [keyData, paymentMethodsResponse] = await Promise.all([
-          trackedFetch("/api/adyen/checkout/client-key"),
-          trackedFetch("/api/adyen/checkout/payment-methods", {
+          trackedFetch("/api/adyen/checkout/client-key?flow=dropin"),
+          trackedFetch("/api/adyen/checkout/payment-methods?flow=dropin", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ amount: dropinAmount, currency: dropinCurrency }),
@@ -339,7 +365,7 @@ export default function CheckoutPage() {
                 body: JSON.stringify({
                   amount: dropinAmount,
                   currency: dropinCurrency,
-                  reference: `virtual card payment ${(window.crypto || crypto).randomUUID()}`,
+                  reference: `${acquiredFlight.reference}-card-${(window.crypto || crypto).randomUUID().slice(0, 8)}`,
                   stateData: state.data,
                   additionalData: { customRoutingFlag: "adyenIssuedTestCard" },
                   origin: window.location.origin,
@@ -387,6 +413,29 @@ export default function CheckoutPage() {
           onPaymentCompleted: (result) => {
             if (result?.resultCode === "Authorised") {
               showSuccess(`Card payment ${formatCurrency(dropinAmount, dropinCurrency)} authorised`);
+              const acquired = orderRef.current;
+              if (user?.accountHolderId && acquired) {
+                trackedFetch("/api/scoreboard", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    accountHolderId: user.accountHolderId,
+                    type: "purchase",
+                    reference: result?.pspReference || acquired.reference,
+                    pspReference: result?.pspReference || "",
+                    amountMinor: dropinAmount,
+                    currency: dropinCurrency,
+                    flight: {
+                      airlineName: acquired.airlineName,
+                      airlineCode: acquired.airlineCode,
+                      flightCode: acquired.flightCode,
+                      flightDisplay: acquired.flightDisplay,
+                      origin: acquired.origin,
+                      destination: acquired.destination,
+                    },
+                  }),
+                }).catch(() => {});
+              }
             } else {
               showError(`Payment ${result?.resultCode || "did not complete"}`);
             }
@@ -481,9 +530,11 @@ export default function CheckoutPage() {
             <button type="button" className="ca-button-secondary h-10 px-5" onClick={randomizeOrder} disabled={acquiring}>
               New Flight
             </button>
-            <button type="button" className="ca-button-dark h-10 px-5" onClick={acquireFlight} disabled={acquiring}>
-              {acquiring ? "Acquiring…" : "Acquire Flight"}
-            </button>
+            {acquiredFlight ? null : (
+              <button type="button" className="ca-button-dark h-10 px-5" onClick={acquireFlight} disabled={acquiring}>
+                {acquiring ? "Acquiring…" : "Acquire Flight"}
+              </button>
+            )}
           </div>
         </div>
 
@@ -557,9 +608,11 @@ export default function CheckoutPage() {
         <section className="ca-panel">
           <h2 className="ca-section-title">Pay</h2>
           <p className="ca-muted -mt-2 mb-4">
-            Copy a card from your wallet above and pay{" "}
-            {formatCurrency(acquiredFlight.amountMinor, acquiredFlight.currency)} for {acquiredFlight.airlineName}{" "}
-            {acquiredFlight.flightDisplay} ({acquiredFlight.origin.code} → {acquiredFlight.destination.code}).
+            Now pay the airline for the seat. You collected{" "}
+            <span className="font-semibold tabular-nums">{formatCurrency(acquiredFlight.amountMinor, acquiredFlight.currency)}</span>{" "}
+            from the traveler — pay the airline{" "}
+            <span className="font-semibold tabular-nums">{formatCurrency(acquiredFlight.purchasedAmountMinor || 0, acquiredFlight.currency)}</span>{" "}
+            to lock in your margin ({acquiredFlight.airlineName} {acquiredFlight.flightDisplay} · {acquiredFlight.origin.code} → {acquiredFlight.destination.code}).
           </p>
           <div className="mx-auto w-full max-w-md">
             {dropinLoading ? <p className="ca-muted text-center">Loading payment form…</p> : null}

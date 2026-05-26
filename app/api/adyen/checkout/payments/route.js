@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
-import { adyenCheckoutRequest } from "@/lib/adyen";
+import { adyenCheckoutRequest, adyenDropInCheckoutRequest } from "@/lib/adyen";
 
-const COMMISSION_BPS = 1000; // 10% commission to the liable balance account
+const COMMISSION_BPS = 100; // 1% commission to the liable balance account
 
 const TEST_PAYMENT_METHOD = {
   type: "scheme",
@@ -20,14 +20,14 @@ function buildSplits({ amountValue, balanceAccountId, liableBalanceAccountId, re
       type: "BalanceAccount",
       account: balanceAccountId,
       reference: `${reference}-sale`,
-      description: "Flight sale proceeds",
+      description: `Flight ${reference} sale proceeds`,
     },
     {
       amount: { value: commission },
       type: "BalanceAccount",
       account: liableBalanceAccountId,
       reference: `${reference}-commission`,
-      description: "Platform commission (10%)",
+      description: `Platform commission on ${reference} (1%)`,
     },
   ];
 }
@@ -48,7 +48,6 @@ export async function POST(request) {
     } = body;
     const amountValue = Number(amount);
     const currencyCode = currency || "USD";
-    const merchantAccount = process.env.ADYEN_MERCHANT_ACCOUNT;
 
     if (!amountValue || amountValue <= 0) {
       return Response.json({ error: "amount must be greater than 0." }, { status: 400 });
@@ -66,17 +65,29 @@ export async function POST(request) {
       // so paymentMethod/browserInfo/billingAddress/riskData arrive intact,
       // then layer server-side fields on top. customRoutingFlag is added LAST
       // inside additionalData so it always wins.
+      // Unique shopperReference per Drop-in payment so Adyen's duplicate-shopper
+      // velocity check doesn't flag it as the same shopper as the upstream
+      // Acquire-Flight call.
+      const dropinShopperReference = `dropin-${randomUUID()}`;
+      const dropinReference = reference || `virtual-card-${randomUUID()}`;
+      const dropinMerchantAccount = process.env.DROP_IN_ADYEN_MERCHANT_ACCOUNT;
+      if (!dropinMerchantAccount) {
+        return Response.json(
+          { error: "DROP_IN_ADYEN_MERCHANT_ACCOUNT env var is not configured." },
+          { status: 500 }
+        );
+      }
       const payload = {
         ...stateData,
-        merchantAccount,
+        merchantAccount: dropinMerchantAccount,
         countryCode: "US",
         amount: { value: amountValue, currency: currencyCode },
-        reference: resolvedReference,
+        reference: dropinReference,
         paymentMethod: stateData.paymentMethod,
         browserInfo: stateData.browserInfo,
         channel: "Web",
         shopperInteraction: "Ecommerce",
-        shopperReference: "demo-shopper",
+        shopperReference: dropinShopperReference,
         origin: origin || "",
         returnUrl: computedReturnUrl,
         additionalData: {
@@ -84,7 +95,7 @@ export async function POST(request) {
           customRoutingFlag: "adyenIssuedTestCard",
         },
       };
-      const data = await adyenCheckoutRequest("/payments", "POST", payload);
+      const data = await adyenDropInCheckoutRequest("/payments", "POST", payload);
       console.log("[dropin] /payments raw response:", JSON.stringify({
         resultCode: data?.resultCode,
         refusalReason: data?.refusalReason,
@@ -120,7 +131,7 @@ export async function POST(request) {
       paymentMethod: TEST_PAYMENT_METHOD,
       shopperInteraction: "Ecommerce",
       returnUrl: computedReturnUrl,
-      merchantAccount,
+      merchantAccount: process.env.ADYEN_MERCHANT_ACCOUNT,
       splits: buildSplits({
         amountValue,
         balanceAccountId,
