@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApiHistory } from "@/context/ApiHistoryContext";
 import { useAuth } from "@/context/AuthContext";
@@ -22,6 +22,79 @@ export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [honeypot, setHoneypot] = useState("");
   const [formStartedAt] = useState(() => Date.now());
+  // AccountHolder id pre-resolved from the email as the user types. When set,
+  // /api/login skips the slow find-by-reference step and goes straight to hydrate.
+  const resolvedAccountHolderIdRef = useRef("");
+  const resolveAbortRef = useRef(null);
+  // Once resolve identifies a real AccountHolder, we kick off the actual
+  // hydrate-and-return-session call in the background and stash the promise.
+  // On submit we just await the already-running call.
+  const preloginPromiseRef = useRef(null);
+  const preloginEmailRef = useRef("");
+  const preloginAbortRef = useRef(null);
+
+  // Debounced background resolve: each keystroke schedules a /api/login/resolve
+  // call ~300ms later. By the time the user clicks Login, we usually already
+  // have their AccountHolder id in hand and the server can skip the lookup.
+  useEffect(() => {
+    resolvedAccountHolderIdRef.current = "";
+    // Invalidate any prior prelogin if the email changed.
+    if (preloginEmailRef.current && preloginEmailRef.current !== email.trim().toLowerCase()) {
+      if (preloginAbortRef.current) preloginAbortRef.current.abort();
+      preloginPromiseRef.current = null;
+      preloginEmailRef.current = "";
+    }
+    const trimmed = email.trim().toLowerCase();
+    if (!trimmed.includes("@") || trimmed.length < 5) return undefined;
+
+    if (resolveAbortRef.current) resolveAbortRef.current.abort();
+    const controller = new AbortController();
+    resolveAbortRef.current = controller;
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/login/resolve", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: trimmed }),
+          signal: controller.signal,
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (email.trim().toLowerCase() !== trimmed) return;
+
+        const accountHolderId = data?.accountHolderId || "";
+        resolvedAccountHolderIdRef.current = accountHolderId;
+
+        // Known existing user → start the real login in the background so by the
+        // time they hit the button, hydrate has already completed (or is close to).
+        if (accountHolderId && preloginEmailRef.current !== trimmed) {
+          if (preloginAbortRef.current) preloginAbortRef.current.abort();
+          const preloginController = new AbortController();
+          preloginAbortRef.current = preloginController;
+          preloginEmailRef.current = trimmed;
+          preloginPromiseRef.current = fetch("/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: trimmed, accountHolderId }),
+            signal: preloginController.signal,
+          })
+            .then(async (response) => {
+              if (!response.ok) throw new Error((await response.json().catch(() => ({})))?.error || "prelogin failed");
+              return response.json();
+            })
+            .catch((_error) => null);
+        }
+      } catch (_error) {
+        // Aborted or network error — ignore; submit path will fall back.
+      }
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [email]);
 
   useEffect(() => {
     if (loadingMode !== "email") {
@@ -41,6 +114,19 @@ export default function LoginForm() {
     setError("");
     setLoadingMode("email");
     try {
+      const trimmed = email.trim().toLowerCase();
+      // If we already started a prelogin for this exact email, just await its result.
+      if (preloginPromiseRef.current && preloginEmailRef.current === trimmed) {
+        const preloadedSession = await preloginPromiseRef.current;
+        if (preloadedSession?.accountHolderId) {
+          setSession(preloadedSession);
+          router.push("/account");
+          return;
+        }
+        // Prelogin failed — fall through to a normal submit below.
+        preloginPromiseRef.current = null;
+        preloginEmailRef.current = "";
+      }
       const data = await trackedFetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -48,6 +134,7 @@ export default function LoginForm() {
           email,
           honeypot,
           formStartedAt,
+          accountHolderId: resolvedAccountHolderIdRef.current || undefined,
         }),
       });
       setSession(data);

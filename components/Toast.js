@@ -35,6 +35,19 @@ export function useToast() {
     [clearToast]
   );
 
+  const showCustom = useCallback(
+    (type, content) => {
+      if (!content) return;
+      clearToast();
+      setToast({ type, content });
+      dismissTimerRef.current = setTimeout(() => {
+        dismissTimerRef.current = null;
+        setToast(null);
+      }, TOAST_DISMISS_MS);
+    },
+    [clearToast]
+  );
+
   const showSuccess = useCallback(
     (message) => {
       showToast("success", message);
@@ -55,6 +68,7 @@ export function useToast() {
     toast,
     clearToast,
     showToast,
+    showCustom,
     showSuccess,
     showError,
   };
@@ -71,11 +85,13 @@ export default function Toast({ toast }) {
       }`}
     >
       <div className="space-y-1">
-        {toast.message.split("\n").map((line, index) => (
-          <p key={index} className="text-sm font-medium leading-5">
-            {line}
-          </p>
-        ))}
+        {toast.content
+          ? toast.content
+          : toast.message.split("\n").map((line, index) => (
+              <p key={index} className="text-sm font-medium leading-5">
+                {line}
+              </p>
+            ))}
       </div>
     </div>
   );

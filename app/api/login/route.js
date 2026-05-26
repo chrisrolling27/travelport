@@ -96,9 +96,23 @@ export async function POST(request) {
     const normalizedAccountHolderId = String(accountHolderId || "").trim();
     const normalizedEmail = String(email || "").trim().toLowerCase();
 
-    if (normalizedAccountHolderId) {
-      // Restore path: validate existing local session quickly by AH id.
+    if (normalizedAccountHolderId && !normalizedEmail) {
+      // Restore path: AuthContext rehydrate with just the AH id (no email typed).
       session = await hydrateSessionFromAccountHolderId(normalizedAccountHolderId);
+    } else if (normalizedAccountHolderId && normalizedEmail) {
+      // Fast path from the login form's pre-resolve. Verify the pre-resolved
+      // AH actually belongs to the typed email before trusting it; otherwise
+      // fall back to the normal email-based lookup.
+      try {
+        const candidate = await hydrateSessionFromAccountHolderId(normalizedAccountHolderId);
+        if (String(candidate?.email || "").toLowerCase() === normalizedEmail) {
+          session = candidate;
+        } else {
+          session = await loginOrProvisionSessionByReference(normalizedEmail);
+        }
+      } catch (_error) {
+        session = await loginOrProvisionSessionByReference(normalizedEmail);
+      }
     } else if (normalizedEmail) {
       // Match existing account holder by reference/description, or provision LE → AH → balance account.
       session = await loginOrProvisionSessionByReference(normalizedEmail);

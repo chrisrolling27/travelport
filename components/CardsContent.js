@@ -10,6 +10,17 @@ import { getApiErrorMessage } from "@/lib/apiError";
 
 const MAX_PAYMENT_INSTRUMENTS = 4;
 const DEFAULT_BA_REFERENCE = "BA329CX22322BT5PFDPVRDHF9";
+const REFERENCE_WORDS = ["reference", "order", "card_number", "card"];
+const REFERENCE_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+function generateRandomReference() {
+  const word = REFERENCE_WORDS[Math.floor(Math.random() * REFERENCE_WORDS.length)];
+  let suffix = "";
+  for (let i = 0; i < 6; i += 1) {
+    suffix += REFERENCE_ALPHABET[Math.floor(Math.random() * REFERENCE_ALPHABET.length)];
+  }
+  return `${word}_${suffix}`;
+}
 const CARD_BRANDS = [
   {
     value: "visa",
@@ -41,9 +52,9 @@ function resolveBrandValue(card) {
 export default function CardsContent() {
   const { user } = useAuth();
   const { trackedFetch } = useApiHistory();
-  const { toast, clearToast, showError, showSuccess } = useToast();
+  const { toast, clearToast, showError, showSuccess, showCustom } = useToast();
   const [brand, setBrand] = useState("visa");
-  const [reference, setReference] = useState("");
+  const [reference, setReference] = useState(() => generateRandomReference());
   const [cards, setCards] = useState([]);
   const [cardsLoading, setCardsLoading] = useState(true);
   const [cardsError, setCardsError] = useState("");
@@ -54,7 +65,7 @@ export default function CardsContent() {
   const cardsCount = cards.length;
   const availableSlots = Math.max(MAX_PAYMENT_INSTRUMENTS - cardsCount, 0);
   const canCreateMoreCards = availableSlots > 0;
-  const isIssueCardDisabled = isCreating || !canCreateMoreCards;
+  const isIssueCardDisabled = isCreating || !canCreateMoreCards || !reference.trim();
   const selectedBrandConfig = useMemo(
     () => CARD_BRANDS.find((item) => item.value === brand) || CARD_BRANDS[0],
     [brand]
@@ -148,15 +159,36 @@ export default function CardsContent() {
         }),
       });
       const createdBrand = String(created?.card?.brand || brand).toLowerCase();
-      const brandLabel = createdBrand === "visa" ? "Visa" : "Mastercard";
       const lastFour = created?.card?.lastFour || "";
       const createdReference = created?.reference || "";
-      let message = `${brandLabel} ${lastFour} created successfully!`;
-      if (createdReference) {
-        message += ` with ${createdReference}`;
-      }
-      showSuccess(message);
-      setReference("");
+      showCustom(
+        "success",
+        <div className="flex items-center gap-3">
+          <div className="flex h-7 w-10 shrink-0 items-center justify-center rounded-md bg-[#0A1A4F] px-1.5">
+            <CardNetworkBrandMark brand={createdBrand} tone="onDark" size="wallet" />
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold leading-5">Card created</span>
+              <span
+                className="font-mono text-base tracking-[0.3em] text-[#0A1A4F]"
+                style={{ fontFamily: '"Courier New", ui-monospace, monospace' }}
+              >
+                •••• {lastFour}
+              </span>
+            </div>
+            {createdReference ? (
+              <span className="text-xs leading-5">
+                ref{" "}
+                <code className="rounded bg-[#D4F1DF] px-1.5 py-0.5 font-mono text-[11px] text-[#046E31]">
+                  {createdReference}
+                </code>
+              </span>
+            ) : null}
+          </div>
+        </div>
+      );
+      setReference(generateRandomReference());
       await loadCards();
     } catch (error) {
       const rawMessage = getApiErrorMessage(error) || "";
@@ -249,18 +281,30 @@ export default function CardsContent() {
               htmlFor="card-reference"
               className="text-xs font-semibold uppercase tracking-[0.08em] text-[#5C6B84]"
             >
-              Card Reference (optional)
+              Card Reference
             </label>
-            <input
-              id="card-reference"
-              type="text"
-              value={reference}
-              onChange={(event) => setReference(event.target.value)}
-              className="ca-input mt-2 h-11 text-sm"
-              placeholder="order 24601"
-              disabled={isCreating}
-              maxLength={20}
-            />
+            <div className="mt-2 flex items-stretch gap-2">
+              <input
+                id="card-reference"
+                type="text"
+                value={reference}
+                onChange={(event) => setReference(event.target.value)}
+                className="ca-input h-11 flex-1 text-sm"
+                placeholder="order_24601"
+                disabled={isCreating}
+                maxLength={20}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setReference(generateRandomReference())}
+                disabled={isCreating}
+                className="ca-button h-11 shrink-0 px-4 text-sm"
+                title="Randomize reference"
+              >
+                Randomize
+              </button>
+            </div>
             <button
               type="submit"
               className="ca-button mt-4 h-11 w-full text-sm sm:w-auto sm:px-6"

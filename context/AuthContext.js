@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 const AuthContext = createContext(null);
 const STORAGE_KEY = "travelport_auth_v1";
@@ -28,6 +28,10 @@ function normalizeSession(data) {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [restoring, setRestoring] = useState(true);
+  const accountHolderIdRef = useRef("");
+  useEffect(() => {
+    accountHolderIdRef.current = user?.accountHolderId || "";
+  }, [user?.accountHolderId]);
 
   const logout = useCallback(() => {
     setUser(null);
@@ -39,6 +43,28 @@ export function AuthProvider({ children }) {
     setUser(session);
     if (PERSIST_AUTH) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+    }
+  }, []);
+
+  const refreshSession = useCallback(async () => {
+    const accountHolderId = accountHolderIdRef.current;
+    if (!accountHolderId) return null;
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accountHolderId }),
+      });
+      if (!res.ok) throw new Error("Unable to refresh session.");
+      const data = await res.json();
+      const session = normalizeSession(data);
+      setUser(session);
+      if (PERSIST_AUTH) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+      }
+      return session;
+    } catch (_error) {
+      return null;
     }
   }, []);
 
@@ -72,8 +98,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, restoring, setSession, logout }),
-    [logout, restoring, setSession, user]
+    () => ({ user, restoring, setSession, refreshSession, logout }),
+    [logout, refreshSession, restoring, setSession, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

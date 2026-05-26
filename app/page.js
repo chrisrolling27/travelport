@@ -15,6 +15,14 @@ export default function LandingPage() {
     if (user) router.replace("/account");
   }, [router, user]);
 
+  useEffect(() => {
+    // Warm the server-side AccountHolder cache as soon as the user lands on the
+    // login screen. By the time they finish typing their email and submit, the
+    // server already has email → AH id in memory, so login skips the slow paginated
+    // list call entirely.
+    fetch("/api/login/warm", { method: "POST" }).catch(() => {});
+  }, []);
+
   if (restoring) {
     return (
       <main className="flex min-h-screen items-center justify-center p-6">

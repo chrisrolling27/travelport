@@ -3,10 +3,13 @@ import { adyenTransfersRequest } from "@/lib/adyen";
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const accountHolderId = searchParams.get("accountHolderId");
-    const query = accountHolderId
-      ? `?accountHolderId=${encodeURIComponent(accountHolderId)}`
-      : "";
+    const passThrough = ["accountHolderId", "balanceAccountId", "paymentInstrumentId", "createdSince", "createdUntil", "sortOrder", "limit", "cursor"];
+    const params = new URLSearchParams();
+    for (const key of passThrough) {
+      const value = searchParams.get(key);
+      if (value) params.set(key, value);
+    }
+    const query = params.toString() ? `?${params.toString()}` : "";
     const data = await adyenTransfersRequest(`/transfers${query}`, "GET");
     return Response.json(data);
   } catch (error) {

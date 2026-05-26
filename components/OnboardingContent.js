@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import EmptyState from "@/components/EmptyState";
 import StatusBadge from "@/components/StatusBadge";
@@ -10,8 +10,8 @@ import { useAuth } from "@/context/AuthContext";
 import { getApiErrorMessage } from "@/lib/apiError";
 
 const ONBOARDING_CAPABILITY_ORDER = [
-  "issueCardCommercial",
-  "useCardCommercial",
+  "issueCard",
+  "useCard",
   "receivePayments",
   "receiveFromBalanceAccount",
   "receiveFromPlatformPayments",
@@ -20,8 +20,8 @@ const ONBOARDING_CAPABILITY_ORDER = [
 ];
 
 const CAPABILITY_LABELS = {
-  issueCardCommercial: "Issue card commercial",
-  useCardCommercial: "Use card commercial",
+  issueCard: "Issue card commercial",
+  useCard: "Use card commercial",
   receivePayments: "Receive payments",
   receiveFromBalanceAccount: "Receive funds from balance accounts",
   receiveFromPlatformPayments: "Receive funds from split payments",
@@ -107,21 +107,64 @@ function CapabilityIssueBadges({ labels }) {
 }
 
 export default function OnboardingContent() {
-  const { user } = useAuth();
+  const { user, refreshSession } = useAuth();
   const { trackedFetch } = useApiHistory();
   const { toast, clearToast, showError } = useToast();
   const [expandedCapabilityName, setExpandedCapabilityName] = useState(null);
+  const [onboardingContext, setOnboardingContext] = useState({
+    paymentsBusinessLineId: "",
+    storeId: "",
+    storeReference: "",
+  });
   const legalEntityId = user?.legalEntityId || "";
+
+  useEffect(() => {
+    if (!legalEntityId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await trackedFetch(
+          `/api/adyen/onboarding-context?legalEntityId=${encodeURIComponent(legalEntityId)}`
+        );
+        if (!cancelled) {
+          setOnboardingContext({
+            paymentsBusinessLineId: data?.paymentsBusinessLineId || "",
+            storeId: data?.storeId || "",
+            storeReference: data?.storeReference || "",
+          });
+        }
+      } catch (_error) {
+        // Non-fatal — fields just stay blank on the page.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [legalEntityId, trackedFetch]);
+
+  useEffect(() => {
+    refreshSession();
+    const onFocus = () => refreshSession();
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") refreshSession();
+    };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [refreshSession]);
 
   const capabilities = useMemo(() => {
     const capabilityMap = user?.capabilities || {};
-    return ONBOARDING_CAPABILITY_ORDER.filter((name) => capabilityMap[name]).map((name) => {
+    return ONBOARDING_CAPABILITY_ORDER.map((name) => {
       const value = capabilityMap[name];
       const problems = value?.problems || [];
       return {
         name,
         allowed: value?.allowed === true ? "Yes" : "No",
-        status: value?.allowed ? "allowed" : value?.verificationStatus || "pending",
+        status: value?.allowed ? "allowed" : "pending",
         problems,
         issueLabels: labelsFromCapabilityProblems(problems),
       };
@@ -181,16 +224,11 @@ export default function OnboardingContent() {
           </li>
           <li>
             <span className="font-semibold">Payments Business Line:</span>{" "}
-            <span className="break-all">{user?.paymentsBusinessLineId || "—"}</span>
+            <span className="break-all">{onboardingContext.paymentsBusinessLineId || "—"}</span>
           </li>
           <li>
             <span className="font-semibold">Store:</span>{" "}
-            <span className="break-all">
-              {user?.storeId || "—"}
-              {user?.storeReference ? (
-                <span className="text-[#5C6B84]"> (ref: {user.storeReference})</span>
-              ) : null}
-            </span>
+            <span className="break-all">{onboardingContext.storeId || "—"}</span>
           </li>
         </ul>
       </section>
@@ -203,8 +241,7 @@ export default function OnboardingContent() {
             </h2>
             {!allCapabilitiesSatisfied ? (
               <p className="mt-2 max-w-2xl text-sm text-[#5C6B84]">
-                Open Hosted Onboarding to submit verification details, add transfer instruments, and accept terms and
-                conditions to enable capabilities.
+                Sign the pretend terms and conditions with the button here
               </p>
             ) : null}
           </div>
@@ -213,7 +250,7 @@ export default function OnboardingContent() {
             onClick={launchHostedOnboarding}
             className="ca-button-dark h-10 w-full px-5 md:w-auto"
           >
-            {allCapabilitiesSatisfied ? "Reopen Hosted Onboarding" : "Launch Hosted Onboarding"}
+            {allCapabilitiesSatisfied ? "Reopen" : "Sign"}
           </button>
         </div>
       </section>

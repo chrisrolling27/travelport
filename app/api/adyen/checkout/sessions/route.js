@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { adyenCheckoutRequest } from "@/lib/adyen";
 
 function resolveBaseUrl(request) {
@@ -16,13 +17,16 @@ export async function POST(request) {
     const { amount, currency, reference, returnUrl } = await request.json();
     const baseUrl = resolveBaseUrl(request);
 
+    // Hard-coded simple session creation — no store, no splits, no balance accounts.
+    // Drop-in is a standalone "spend your card" demo and intentionally does not
+    // depend on the user's provisioned store. (Mirrors the cardportal setup.)
     const data = await adyenCheckoutRequest("/sessions", "POST", {
       merchantAccount: process.env.ADYEN_MERCHANT_ACCOUNT,
       amount: {
         value: amount,
         currency: currency || "USD",
       },
-      reference,
+      reference: reference || `virtual card payment ${randomUUID()}`,
       returnUrl: returnUrl || `${baseUrl}/checkout`,
       countryCode: "US",
       shopperReference: "demo-shopper",
